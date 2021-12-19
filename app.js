@@ -1,72 +1,77 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const path = require('path')
-const hbs = require('express-handlebars')
-const { mongoDbUrl, PORT, globalVariables } = require('./config/config')
-const flash = require('connect-flash')
-const session = require('express-session')
-const methodOverride = require('method-override')
-const { selectOption } = require('./config/customFunctions')
-const fileUpload = require('express-fileupload')
-const passport = require('passport')
+const express = require("express");
+const mongoose = require("mongoose");
+const path = require("path");
+const hbs = require("express-handlebars");
+const { globalVariables } = require("./config/config");
+const flash = require("connect-flash");
+const session = require("express-session");
+const methodOverride = require("method-override");
+const { selectOption } = require("./config/customFunctions");
+const fileUpload = require("express-fileupload");
+const passport = require("passport");
+require("dotenv").config();
 
-
-const app = express()
-
+const app = express();
 
 // Configure Mongoose to Connect to MongoDB
-mongoose.connect(mongoDbUrl, {
+mongoose
+  .connect(process.env.CONNECTION_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
-    useFindAndModify: false
-}).then(response => {
-    console.log('MongoDB connected Successfully.')
-}).catch(err => {
-    console.log('Database connection failed.')
-})
+    useFindAndModify: false,
+  })
+  .then((response) => {
+    console.log("MongoDB connected Successfully.");
+  })
+  .catch((err) => {
+    console.log("Database connection failed.");
+  });
 
 // Setup View Engine to Use Handlebars
-app.engine('handlebars', hbs({ defaultLayout: 'default', helpers: {select: selectOption} }))
-app.set('view engine', 'handlebars')
-
+app.engine(
+  "handlebars",
+  hbs({ defaultLayout: "default", helpers: { select: selectOption } })
+);
+app.set("view engine", "handlebars");
 
 // Configuration
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(express.static(path.join(__dirname, 'public')))
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Flash and Session
-app.use(session({
-    secret: 'anysecret',
+app.use(
+  session({
+    secret: "anysecret",
     saveUninitialized: true,
-    resave: true
-}))
+    resave: true,
+  })
+);
 
 // Passport
-app.use(passport.initialize())
-app.use(passport.session())
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.use(flash())
+app.use(flash());
 
-app.use(globalVariables)
+app.use(globalVariables);
 
 // File Upload Middleware
-app.use(fileUpload())
+app.use(fileUpload());
 
 // Method Override Middleware
-app.use(methodOverride('newMethod'))
+app.use(methodOverride("newMethod"));
 
 // Routes
-const defaultRoutes = require('./routes/defaultRoutes')
-const adminRoutes = require('./routes/adminRoutes')
+const defaultRoutes = require("./routes/defaultRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
-app.use('/', defaultRoutes)
-app.use('/admin', adminRoutes)
+app.use("/", defaultRoutes);
+app.use("/admin", adminRoutes);
 
-
+const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
+  console.log(`Server is running on port ${PORT}`);
+});
